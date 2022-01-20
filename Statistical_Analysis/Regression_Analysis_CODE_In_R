@@ -1,0 +1,47 @@
+#TOTAL 1012
+train<-read.csv("C:/Users/tyumi/Downloads/2020프젝논문데이터/train_3.csv",header=TRUE)
+colnames(train)
+tr<-train
+te<-read.csv("C:/Users/tyumi/Downloads/2020프젝논문데이터/test_3.csv",header=TRUE)
+colnames(tr)<-c("Breed","Citysize","Gender","Neutralization","Age","Weight",
+"Color","Adoption","Disease","Behavior")
+colnames(te)<-c("Breed","Citysize","Gender","Neutralization","Age","Weight",
+"Color","Adoption","Disease","Behavior")
+
+for (i in c(1,2,3,4,7,8,9,10)){
+tr[,i]<-as.factor(tr[,i])
+te[,i]<-as.factor(te[,i])
+}
+
+tr$Age<-scale(train$Age)
+tr$Weight<-scale(train$Weight)
+
+te$Age<-scale(te$Age)
+te$Weight<-scale(te$Weight)
+
+attach(tr)
+glm<-glm(Adoption~Breed+Citysize+Gender+Neutralization+Age+Weight+Color+Disease+Behavior,family=binomial,data=tr)
+summary(glm)
+k<-step(glm,direction='both')
+summary(k)
+library(ROCR)
+p <- predict(k, newdata=te, type="response")
+head(p,100)
+pr <- prediction(p, te$Adoption)
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+pp<-rep(0,nrow(te))
+pp[p>0.5]<-c("Yes")
+pp[p<=0.5]<-c("No")
+library(caret)
+#install.packages('e1071')
+library(e1071)
+confusionMatrix(as.factor(pp),as.factor(te$Adoption),positive=c("Yes"))
+
+auc
+#AIC BIC구하기
+AIC(glm)
+BIC(glm)
