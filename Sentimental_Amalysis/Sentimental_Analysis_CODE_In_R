@@ -1,0 +1,269 @@
+### R코드입니다 ###
+setwd("C:/Users/tyumi/Documents/APMS/")
+dataset <- read.csv("2020_data.csv",stringsAsFactors = F)
+
+ 
+
+data <- dataset$특징
+
+ 
+
+data1 <- data[grepl("[가-힣]",data)==TRUE]
+
+ 
+
+ 
+
+ 
+
+dataset$특징 <- paste(dataset$특징,dataset$noticecomment,sep=",")
+
+ 
+
+ 
+
+ 
+
+pos <- readxl::read_xlsx("긍정.xlsx")
+
+ 
+
+neg <- readxl::read_xlsx("부정.xlsx")
+
+ 
+
+pos <- paste(pos$x,collapse = "|")
+
+ 
+
+neg <- paste(neg$x,collapse = "|")
+
+ 
+
+ 
+
+ 
+
+postive <- rep(0,length(dataset$특징))
+
+ 
+
+negative <- rep(0,length(dataset$특징))
+
+ 
+
+ 
+
+ 
+
+dataset$특징 <- gsub("개체관리","",dataset$특징)
+
+ 
+
+dataset$특징 <- gsub("귀염증","염증",dataset$특징)
+
+ 
+
+ 
+
+ 
+
+for (i in (1:length(dataset$특징))){
+
+ 
+
+  if (((grepl("않음|안음|않다|미흡|불량",dataset$특징[i]))&(grepl(pos,dataset$특징[i])))){
+
+ 
+
+    negative[i] <- 1
+
+ 
+
+  }
+
+ 
+
+  else if (grepl("안좋음|않좋음",dataset$특징[i])) {
+
+ 
+
+    negative[i] <- 1
+
+ 
+
+  }
+
+ 
+
+  else if (grepl(pos,dataset$특징[i])) {
+
+ 
+
+    postive[i] <- 1
+
+ 
+
+  }
+
+ 
+
+} 
+
+ 
+
+ 
+
+ 
+
+for (i in 1:length(dataset$특징)){  
+
+ 
+
+  if (grepl(neg,dataset$특징[i])==TRUE) {
+
+ 
+
+    negative[i] <- 1
+
+ 
+
+  }
+
+ 
+
+}
+
+ 
+
+ 
+
+ 
+
+dataset <- cbind(dataset,postive)
+
+ 
+
+dataset <- cbind(dataset,negative)
+
+ 
+
+ 
+
+ 
+
+health <- readxl::read_xlsx("질병0919_1.xlsx")
+
+ 
+
+health <- paste(health$x,collapse = "|")
+
+ 
+
+ 
+
+ 
+
+hea <- rep(0,length(dataset$특징))
+
+ 
+
+test <- rep(0,length(dataset$특징))
+
+ 
+
+ 
+
+ 
+
+dataset$특징 <- gsub("개체관리","",dataset$특징)
+
+ 
+
+dataset$특징 <- gsub("귀염증","염증",dataset$특징)
+
+ 
+
+ 
+
+ 
+
+for (i in 1:length(dataset$특징)){  
+
+ 
+
+  if (grepl(health,dataset$특징[i])==TRUE) {
+
+ 
+
+    hea[i] <- 1
+
+ 
+
+  }
+
+ 
+
+}
+
+ 
+
+ 
+
+ 
+
+for (i in (1:length(dataset$특징))){
+
+ 
+
+  if (((grepl("음성",dataset$특징[i]))&(grepl("파보|사상충|홍역|코로나",dataset$특징[i])))){
+
+ 
+
+    hea[i] <- 0
+
+ 
+
+    test[i] <- 1
+
+ 
+
+  }
+
+ 
+
+}
+
+ 
+
+ 
+
+dataset <- cbind(dataset,hea)
+
+ 
+
+ 
+
+ 
+dataset_1<-dataset[,-1]
+
+ 
+
+ 
+
+dataset_2<-dataset_1[complete.cases(dataset_1),]
+
+ 
+
+dataset_3<-dataset_2[-which(dataset_2$postive==0&dataset_2$negative==0),]
+
+ 
+
+colnames(dataset_3)[10]<-c('positive')
+
+data<-dataset_3
+colnames(data)[c(1,12)]<-c('character','disease')
+data[which(data$negative==1),c('negative')]<--1
+behavior<-data$negative+data$positive
+data<-cbind(data,behavior)
+write.csv(data,"C:/Users/tyumi/Documents/APMS/dataset_질병2.csv",row.names=FALSE)
