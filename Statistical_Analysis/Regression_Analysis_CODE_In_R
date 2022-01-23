@@ -14,9 +14,9 @@ te[,i]<-as.factor(te[,i])
 }
 attach(tr)
 glm<-glm(Adoption~Breed+Citysize+Gender+Neutralization+Age+Weight+Color+
-B_D,family=binomial,data=tr)
+Disease+Behavior+B_D,family=binomial,data=tr)
 summary(glm)
-k<-glm
+k<-step(glm,direction='both')
 library(ROCR)
 
 p <- predict(k, newdata=te, type="response")
