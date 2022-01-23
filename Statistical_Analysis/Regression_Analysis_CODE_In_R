@@ -1,30 +1,24 @@
 #TOTAL 1012
-train<-read.csv("C:/Users/tyumi/Downloads/2020프젝논문데이터/train_3.csv",header=TRUE)
+train<-read.csv("C:/Users/tyumi/Documents/APMS/train_3.csv",header=TRUE)
 colnames(train)
 tr<-train
-te<-read.csv("C:/Users/tyumi/Downloads/2020프젝논문데이터/test_3.csv",header=TRUE)
+te<-read.csv("C:/Users/tyumi/Documents/APMS/test_3.csv",header=TRUE)
 colnames(tr)<-c("Breed","Citysize","Gender","Neutralization","Age","Weight",
-"Color","Adoption","Disease","Behavior")
+"Color","Adoption","Disease","Behavior","B_D")
 colnames(te)<-c("Breed","Citysize","Gender","Neutralization","Age","Weight",
-"Color","Adoption","Disease","Behavior")
+"Color","Adoption","Disease","Behavior","B_D")
 
-for (i in c(1,2,3,4,7,8,9,10)){
+for (i in c(1,2,3,4,7,8,9,10,11)){
 tr[,i]<-as.factor(tr[,i])
 te[,i]<-as.factor(te[,i])
 }
-
-tr$Age<-scale(train$Age)
-tr$Weight<-scale(train$Weight)
-
-te$Age<-scale(te$Age)
-te$Weight<-scale(te$Weight)
-
 attach(tr)
-glm<-glm(Adoption~Breed+Citysize+Gender+Neutralization+Age+Weight+Color+Disease+Behavior,family=binomial,data=tr)
+glm<-glm(Adoption~Breed+Citysize+Gender+Neutralization+Age+Weight+Color+
+B_D,family=binomial,data=tr)
 summary(glm)
-k<-step(glm,direction='both')
-summary(k)
+k<-glm
 library(ROCR)
+
 p <- predict(k, newdata=te, type="response")
 head(p,100)
 pr <- prediction(p, te$Adoption)
@@ -42,6 +36,9 @@ library(e1071)
 confusionMatrix(as.factor(pp),as.factor(te$Adoption),positive=c("Yes"))
 
 auc
+lrRoc <- roc(response=te$Adoption, predictor=p)
+plot(lrRoc)
+auc(lrRoc)
 #AIC BIC구하기
 AIC(glm)
 BIC(glm)
